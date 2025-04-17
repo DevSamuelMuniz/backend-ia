@@ -1,32 +1,16 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-import numpy as np
-import pickle
 import random
+from fastapi import APIRouter, UploadFile, File
+from api.models.chat import ChatRequest, ChatResponse
+from api.models.predict import SVCInput
+from api.services.gemini_service import GeminiChat
+from api.services.svc_service import SVCService
 
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI
+router = APIRouter()
+gemini = GeminiChat()
+svc = SVCService()
 
-app = FastAPI()
 
-# Aqui você define quem pode acessar sua API
-origins = [
-    "http://localhost:3000",  # Frontend local
-    "http://127.0.0.1:3000",  # Outra forma de chamar localhost
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,  # Você também pode usar ["*"] para liberar tudo (não recomendado em produção)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-with open("SVC.pkl", "rb") as f:
-    modelo = pickle.load(f)
-
-mensagens_sem_cancer = [
+baixo_risco_respostas = [
     "Boa notícia! Os sinais indicam ausência de câncer de pulmão. 😊",
     "Tudo certo por aqui! Nenhum indício de câncer foi detectado. ✨",
     "Ufa! De acordo com a análise, está tudo limpo. 💪",
@@ -49,7 +33,7 @@ mensagens_sem_cancer = [
     "Nada detectado! Continue cuidando bem da sua saúde. 💖"
 ]
 
-mensagens_com_cancer = [
+alto_risco_respostas = [
     "Atenção: os sinais indicam possíveis indícios de câncer de pulmão. 🩺",
     "Recomendamos buscar orientação médica. O modelo detectou sinais de alerta. ⚠️",
     "Cuidado! A análise sugere um possível caso de câncer. Consulte um especialista. 🙏",
@@ -72,31 +56,25 @@ mensagens_com_cancer = [
     "Sinais detectados que podem representar perigo. Aja com responsabilidade. 💭"
 ]
 
-class EntradaDados(BaseModel):
-    GENDER: int
-    AGE: int
-    SMOKING: int
-    YELLOW_FINGERS: int
-    ANXIETY: int
-    PEER_PRESSURE: int
-    CHRONIC_DISEASE: int
-    FATIGUE: int
-    ALLERGY: int
-    WHEEZING: int
-    ALCOHOL_CONSUMING: int
-    COUGHING: int
-    SHORTNESS_OF_BREATH: int
-    SWALLOWING_DIFFICULTY: int
-    CHEST_PAIN: int
+@router.post("/", response_model=ChatResponse)
+async def chat_with_bot(payload: ChatRequest):
+    return gemini.chat(payload)
 
-@app.post("/predict")
-def prever_diagnostico(dados: EntradaDados):
-    entrada = np.array([list(dados.dict().values())])
-    print(entrada)
-    pred = modelo.predict(entrada)[0]
-
-    if pred == 1:
-        resultado = random.choice(mensagens_com_cancer)
+@router.post("/predict/")
+async def predict_cancer(payload: SVCInput):
+    result = svc.predict(payload)
+    
+    if result["prediction"] == 1:
+        resposta = random.choice(alto_risco_respostas)
     else:
-        resultado = random.choice(mensagens_sem_cancer)
-    return {"previsao": int(pred), "resultado": resultado}
+        resposta = random.choice(baixo_risco_respostas)
+    
+    return {
+        "resultado": resposta,
+    }
+
+@router.post("/upload/")
+async def upload_file(file: UploadFile = File(...)):
+    content = await file.read()
+    text = gemini.process_file(file.filename, content)
+    return {"context_text": text}
