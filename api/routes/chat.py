@@ -1,15 +1,50 @@
 import random
+import shap
+import joblib
+import pandas as pd
+import numpy as np
 from fastapi import APIRouter, UploadFile, File
 from api.models.chat import ChatRequest, ChatResponse
 from api.models.predict import SVCInput
 from api.services.gemini_service import GeminiChat
 from api.services.svc_service import SVCService
 
+
+
+# Inicializações
 router = APIRouter()
 gemini = GeminiChat()
 svc = SVCService()
 
+# Carregando o modelo e os nomes das features
+model_bundle = joblib.load("./api/model/svc_model.pkl")
+model = model_bundle["model"]
+feature_names = model_bundle["feature_names"]
 
+# Função para gerar explicações com SHAP
+def explain_prediction(features_dict):
+    features_list = features_dict['features']
+    features_array = pd.DataFrame([features_list], columns=feature_names)
+
+    # Obtém o modelo interno (SVC) do pipeline
+    model_from_pipeline = model.named_steps['svc']
+
+    # Dados de fundo para o KernelExplainer
+    background_data = np.array([
+        [1, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+        [1, 60, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+        [1, 70, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1]
+    ])
+
+    def model_predict_proba(X):
+        return model_from_pipeline.predict_proba(X)
+
+    explainer = shap.KernelExplainer(model_predict_proba, background_data)
+    shap_values = explainer.shap_values(features_array)
+
+    return shap_values
+
+# Respostas para diferentes níveis de risco
 baixo_risco_respostas = [
     "Boa notícia! Os sinais indicam ausência de câncer de pulmão. 😊",
     "Tudo certo por aqui! Nenhum indício de câncer foi detectado. ✨",
@@ -56,23 +91,29 @@ alto_risco_respostas = [
     "Sinais detectados que podem representar perigo. Aja com responsabilidade. 💭"
 ]
 
+# Rota para conversar com o chatbot (Gemini)
 @router.post("/", response_model=ChatResponse)
 async def chat_with_bot(payload: ChatRequest):
     return gemini.chat(payload)
 
+# Rota para prever câncer e retornar explicação com SHAP
 @router.post("/predict/")
 async def predict_cancer(payload: SVCInput):
     result = svc.predict(payload)
     
     if result["prediction"] == 1:
-        resposta = random.choice(alto_risco_respostas)
+        resultado = random.choice(alto_risco_respostas)
     else:
-        resposta = random.choice(baixo_risco_respostas)
+        resultado = random.choice(baixo_risco_respostas)
     
+    shap_importance = explain_prediction(payload.dict())
+
     return {
-        "resultado": resposta,
+        "resultado": resultado,
+        "shap_importance": shap_importance.tolist()
     }
 
+# Rota para upload de arquivo e extração de conteúdo via Gemini
 @router.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
     content = await file.read()

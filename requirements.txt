@@ -2,6 +2,7 @@ fastapi
 uvicorn 
 numpy 
 joblib
+pandas
 pydantic
 scikit-learn
 python-dotenv
