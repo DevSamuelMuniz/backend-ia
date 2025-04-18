@@ -1,48 +1,9 @@
 import random
-import shap
-import joblib
-import pandas as pd
-import numpy as np
 from fastapi import APIRouter, UploadFile, File
 from api.models.chat import ChatRequest, ChatResponse
 from api.models.predict import SVCInput
 from api.services.gemini_service import GeminiChat
 from api.services.svc_service import SVCService
-
-
-
-# Inicializações
-router = APIRouter()
-gemini = GeminiChat()
-svc = SVCService()
-
-# Carregando o modelo e os nomes das features
-model_bundle = joblib.load("./api/model/svc_model.pkl")
-model = model_bundle["model"]
-feature_names = model_bundle["feature_names"]
-
-# Função para gerar explicações com SHAP
-def explain_prediction(features_dict):
-    features_list = features_dict['features']
-    features_array = pd.DataFrame([features_list], columns=feature_names)
-
-    # Obtém o modelo interno (SVC) do pipeline
-    model_from_pipeline = model.named_steps['svc']
-
-    # Dados de fundo para o KernelExplainer
-    background_data = np.array([
-        [1, 80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-        [1, 60, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-        [1, 70, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1]
-    ])
-
-    def model_predict_proba(X):
-        return model_from_pipeline.predict_proba(X)
-
-    explainer = shap.KernelExplainer(model_predict_proba, background_data)
-    shap_values = explainer.shap_values(features_array)
-
-    return shap_values
 
 # Respostas para diferentes níveis de risco
 baixo_risco_respostas = [
@@ -91,6 +52,11 @@ alto_risco_respostas = [
     "Sinais detectados que podem representar perigo. Aja com responsabilidade. 💭"
 ]
 
+# Inicializações
+router = APIRouter()
+gemini = GeminiChat()
+svc = SVCService()
+
 # Rota para conversar com o chatbot (Gemini)
 @router.post("/", response_model=ChatResponse)
 async def chat_with_bot(payload: ChatRequest):
@@ -99,19 +65,24 @@ async def chat_with_bot(payload: ChatRequest):
 # Rota para prever câncer e retornar explicação com SHAP
 @router.post("/predict/")
 async def predict_cancer(payload: SVCInput):
-    result = svc.predict(payload)
+    resposta_ml = svc.predict(payload)  # mantém os dados da IA
     
-    if result["prediction"] == 1:
-        resultado = random.choice(alto_risco_respostas)
+    if resposta_ml["prediction"] == 1:
+        mensagem = random.choice(alto_risco_respostas)
     else:
-        resultado = random.choice(baixo_risco_respostas)
-    
-    shap_importance = explain_prediction(payload.dict())
+        mensagem = random.choice(baixo_risco_respostas)
 
+    # Extrair apenas os SHAP values da classe prevista
+    shap_values_classe_predita = resposta_ml["shap_values"]
+
+    # Agora você pode juntar tudo no retorno
     return {
-        "resultado": resultado,
-        "shap_importance": shap_importance.tolist()
+        "resultado": mensagem,
+        "probabilidade": resposta_ml["probability"],
+        "shap_values": shap_values_classe_predita  
     }
+
+
 
 # Rota para upload de arquivo e extração de conteúdo via Gemini
 @router.post("/upload/")
