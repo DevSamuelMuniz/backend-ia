@@ -23,9 +23,14 @@ from diag_agent import DiagAgent
 # firebase
 import firebase_admin
 from firebase_admin import credentials, firestore
+import os
+from firebase_admin import credentials, initialize_app
+from dotenv import load_dotenv
 
 # Inicializar Firebase (garantir que sempre exista o db)
-cred = credentials.Certificate("../firebase_key.json")
+cred = credentials.Certificate(os.getenv("FIREBASE_KEY_PATH"))
+initialize_app(cred)
+
 try:
     firebase_admin.initialize_app(cred)
 except ValueError:
