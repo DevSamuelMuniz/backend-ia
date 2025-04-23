@@ -21,14 +21,14 @@ from lista_agent import ListaAgent
 from diag_agent import DiagAgent
 
 # firebase
+import json
 import firebase_admin
-from firebase_admin import credentials, firestore
-import os
-from firebase_admin import credentials, initialize_app
-from dotenv import load_dotenv
+from firebase_admin import credentials, initialize_app, firestore
 
-# Inicializar Firebase (garantir que sempre exista o db)
-cred = credentials.Certificate(os.getenv("FIREBASE_KEY_PATH"))
+firebase_credentials_json = json.loads(os.getenv("FIREBASE_KEY_PATH"))
+
+# Usar a chave para inicializar
+cred = credentials.Certificate(firebase_credentials_json)
 initialize_app(cred)
 
 try:
@@ -36,7 +36,6 @@ try:
 except ValueError:
     # já estava inicializado
     pass
-
 db = firestore.client()
 #
 
