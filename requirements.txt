@@ -11,5 +11,4 @@ pymupdf
 python-multipart
 openai>=1.0,<2.0
 firebase-admin
-shap
-freeze
+shap>=0.47.2
