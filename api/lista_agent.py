@@ -65,7 +65,7 @@ class ListaAgent:
         ```lista
         [1, 22, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1]
 
-        
+        ATENÇÃO retorne apenas essa lista, nenhuma infomação a mais nem a menos
 
         Histórico da Conversa: 
         {full_conversation}

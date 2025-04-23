@@ -10,3 +10,4 @@ google-generativeai
 pymupdf
 python-multipart
 openai==0.28
+firebase-admin
