@@ -1,0 +1,16 @@
+
+        Obs:
+          - antes de gerar o json, certifique-se de que o sexo seja representado como: 1 para Masculino e 0 para Feminino.
+          - antes de gerar o json, certifique-se de que se a resposta de fumante for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json
+          - antes de gerar o json, certifique-se de que se a resposta de dedos amarelados for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json 
+          - antes de gerar o json, certifique-se de que se a resposta de ansiedade for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json 
+          - antes de gerar o json, certifique-se de que se a resposta de pressão de familiares ou amigos for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json 
+          - antes de gerar o json, certifique-se de que se a resposta de doença crônica for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json 
+          - antes de gerar o json, certifique-se de que se a resposta de fadiga com frequência for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json 
+          - antes de gerar o json, certifique-se de que se a resposta de alergias for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json 
+          - antes de gerar o json, certifique-se de que se a resposta de chiado ao respirar for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json 
+          - antes de gerar o json, certifique-se de que se a resposta de consumo de álcool for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json 
+          - antes de gerar o json, certifique-se de que se a resposta de tosse frequente for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json 
+          - antes de gerar o json, certifique-se de que se a resposta de falta de ar for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json 
+          - antes de gerar o json, certifique-se de que se a resposta de dificuldade para engolir for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json 
+          - antes de gerar o json, certifique-se de que se a resposta de dor no peito for positiva(sim, às vezes, já, etc... ) irá armazenar 1 no json, se for uam resposta negativa(não, nunca, jamais, etc...) irá armazenar 0 no json 
