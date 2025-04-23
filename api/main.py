@@ -1,4 +1,5 @@
 import uuid
+import uvicorn
 
 #env
 import os
@@ -29,7 +30,6 @@ firebase_credentials_json = json.loads(os.getenv("FIREBASE_KEY_PATH"))
 
 # Usar a chave para inicializar
 cred = credentials.Certificate(firebase_credentials_json)
-initialize_app(cred)
 
 try:
     firebase_admin.initialize_app(cred)
@@ -229,5 +229,5 @@ app.include_router(router, prefix="/api")
 
 # Rodar app manualmente
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=7000, reload=False)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
